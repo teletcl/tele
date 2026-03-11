@@ -1,0 +1,32 @@
+name: Generate Index HTML
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Generate index.html
+        run: |
+          echo '<html><body>' > index.html
+          echo '<h1>Index of Repository Files</h1>' >> index.html
+          for item in $(find . -type f); do
+            echo "<a href='${item}'>${item}</a><br>" >> index.html
+          done
+          echo '</body></html>' >> index.html
+
+      - name: Commit and push changes
+        run: |
+          git config --local user.email 'actions@github.com'
+          git config --local user.name 'GitHub Actions'
+          git add index.html
+          git commit -m 'Update index.html with file listing' || echo 'No changes to commit'
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
